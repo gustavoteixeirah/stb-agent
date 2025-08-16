@@ -1,113 +1,46 @@
 import json
 from typing import Any
 from smolagents import tool
-import os # Importamos a biblioteca os para pegar o nome do arquivo
+import cv2 # Importamos a biblioteca os para pegar o nome do arquivo
 
 @tool
-def qr_code_reader(image_path: str) -> Any:
+def detect_and_decode_qr(image_path: str) -> Any:
     """
-    Lê um QR Code de um arquivo de imagem e retorna os dados da prova.
+    Detects and decodes a QR code from a given image file.
 
     Args:
-        image_path (str): O caminho para o arquivo de imagem contendo o QR Code.
+        image_path (str): The path to the image file containing the QR code.
 
     Returns:
-        dict: Um dicionário com os dados da prova, incluindo 'assessment_id', 
-              'quantity_of_questions' e 'correct_alternatives'.
+        str or None: The decoded data from the QR code if found, otherwise None.
     """
-    print(f"--- MOCK TOOL: Lendo QR Code de '{image_path}' ---")
-    mock_data = {
-        "assessment_id": "PROVA_SMOL_2025_Biol_T1",
-        "quantity_of_questions": 30,
-        "correct_alternatives": {
-               "1": [
-                    "D"
-                ],
-                "2": [
-                    "B"
-                ],
-                "3": [
-                    "B"
-                ],
-                "4": [
-                    "B"
-                ],
-                "5": [
-                    "D"
-                ],
-                "6": [
-                    "D"
-                ],
-                "7": [
-                    "A"
-                ],
-                "8": [
-                    "E"
-                ],
-                "9": [
-                    "A"
-                ],
-                "10": [
-                    "B"
-                ],
-                "11": [
-                    "C"
-                ],
-                "12": [
-                    "E"
-                ],
-                "13": [
-                    "D"
-                ],
-                "14": [
-                    "C"
-                ],
-                "15": [
-                    "D"
-                ],
-                "16": [
-                    "B"
-                ],
-                "18": [
-                    "B"
-                ],
-                "19": [
-                    "D"
-                ],
-                "20": [
-                    "A"
-                ],
-                "21": [
-                    "E"
-                ],
-                "22": [
-                    "B"
-                ],
-                "23": [
-                    "A"
-                ],
-                "24": [
-                    "A"
-                ],
-                "25": [
-                    "E"
-                ],
-                "26": [
-                    "A"
-                ],
-                "27": [
-                    "C"
-                ],
-                "28": [
-                    "B"
-                ],
-                "29": [
-                    "E"
-                ],
-                "30": [
-                    "E"
-                ]
-                    }
-    }
-    
-    return mock_data
+    # Read the image
+    img = cv2.imread(image_path)
+
+    if img is None:
+        print(f"Error: Could not load image from {image_path}")
+        return None
+
+    # Create a QRCodeDetector object
+    detector = cv2.QRCodeDetector()
+
+    # Detect and decode the QR code
+    # The detectAndDecode method returns:
+    # 1. decoded_data: The decoded string from the QR code.
+    # 2. points: The vertices of the detected QR code's bounding box.
+    # 3. straight_qrcode: The straightened, binarized QR code image.
+    decoded_data, points, straight_qrcode = detector.detectAndDecode(img)
+
+    if decoded_data:
+        print(f"QR Code detected. Decoded data: {decoded_data}")
+        # Optional: Draw bounding box if points are available
+        # if points is not None:
+        #     points = points[0].astype(int)
+        #     cv2.polylines(img, [points], True, (0, 255, 0), 2)
+        #     cv2.imshow("QR Code Detected", img)
+        #     cv2.waitKey(0)
+        #     cv2.destroyAllWindows()
+        return decoded_data
+    else:
+        print("No QR Code detected in the image.")
+        return None
